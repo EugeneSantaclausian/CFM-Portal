@@ -1,10 +1,13 @@
 import React from "react";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 import Logo from "../images/logo.png";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   return (
     <div className="App-Full-Page bg-light">
       <div
@@ -43,7 +46,12 @@ export default function Login() {
               </Form.Group>
 
               <div className="d-grid gap-2 py-4">
-                <Button variant="primary" type="button" className="py-2">
+                <Button
+                  variant="primary"
+                  type="button"
+                  className="py-2"
+                  onClick={() => navigate("/home")}
+                >
                   Submit
                 </Button>
               </div>
@@ -59,7 +67,13 @@ export default function Login() {
             © Copyright({new Date().getFullYear()}).
           </p>
           <p className="text-center text-muted fs-6 mt-0">
-            <a href="/">Central Fellowship Ministries</a>
+            <a
+              href="https://cfmgracearena.wixsite.com/home"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Central Fellowship Ministries
+            </a>
           </p>
         </div>
         {/*FOOTER*/}
