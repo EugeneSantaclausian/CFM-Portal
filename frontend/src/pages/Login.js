@@ -1,12 +1,58 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 import Logo from "../images/logo.png";
+import { Alert } from "react-bootstrap";
+import Spinner from "react-bootstrap/Spinner";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import InputGroup from "react-bootstrap/InputGroup";
+import IconButton from "@mui/material/IconButton";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import Auth from "../services/loginService";
 
 export default function Login() {
+  const emailRef = useRef();
+  const passwordRef = useRef();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [text, setText] = useState("");
+  const [passwordState, setPasswordState] = useState("password");
+  const viewPassword = () => {
+    passwordState === "password"
+      ? setPasswordState("text")
+      : setPasswordState("password");
+  };
+
+  const loginUser = async (e) => {
+    e.preventDefault();
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    //Validation
+    if (!email) {
+      setText(`Please enter your email`);
+      return setError(true);
+    } else if (!password) {
+      setText(`Please enter your password`);
+      return setError(true);
+    }
+
+    setLoading(true);
+    setError(false);
+    setSuccess(false);
+    try {
+      const response = await Auth.login(email, password);
+      console.log("RES:", response);
+      return navigate("/home");
+    } catch (err) {
+      setText(err.message);
+      setError(true);
+      return setLoading(false);
+    }
+  };
 
   return (
     <div className="App-Full-Page bg-light">
@@ -33,26 +79,79 @@ export default function Login() {
             >
               Registration Portal
             </h4>
-            <p className="text-center text-muted fs-6 mb-4">Login As Admin</p>
-            <Form>
+            <p
+              className={
+                error
+                  ? "text-center text-muted fs-6 mb-2"
+                  : "text-center text-muted fs-6 mb-4"
+              }
+            >
+              Login As Admin
+            </p>
+            {error && <Alert variant={"danger"}>{text}</Alert>}
+            <Form onSubmit={(e) => loginUser(e)}>
               <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control type="email" />
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  ref={emailRef}
+                  disabled={loading ? true : false}
+                  onInput={() => {
+                    setText("");
+                    setError(false);
+                    setSuccess(false);
+                  }}
+                />
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicPassword">
                 <Form.Label>Password</Form.Label>
-                <Form.Control type="password" />
+                <InputGroup>
+                  <Form.Control
+                    type={passwordState}
+                    ref={passwordRef}
+                    disabled={loading ? true : false}
+                    onInput={() => {
+                      setText("");
+                      setError(false);
+                      setSuccess(false);
+                    }}
+                  />
+                  <InputGroup.Text>
+                    <IconButton
+                      size="sm"
+                      color="inherit"
+                      style={{ padding: 0 }}
+                      onClick={() => viewPassword()}
+                    >
+                      {passwordState === "password" ? (
+                        <VisibilityOffIcon
+                          sx={{ color: "#979797", fontSize: 20, margin: 0 }}
+                        />
+                      ) : (
+                        <VisibilityIcon
+                          sx={{ color: "#979797", fontSize: 20, margin: 0 }}
+                        />
+                      )}
+                    </IconButton>
+                  </InputGroup.Text>
+                </InputGroup>
               </Form.Group>
 
               <div className="d-grid gap-2 py-4">
                 <Button
                   variant="primary"
-                  type="button"
+                  type="submit"
                   className="py-2"
-                  onClick={() => navigate("/home")}
+                  disabled={loading ? true : false}
                 >
-                  Submit
+                  {loading ? (
+                    <div className="text-center">
+                      <Spinner animation="border" variant={"white"} />
+                    </div>
+                  ) : (
+                    "Submit"
+                  )}
                 </Button>
               </div>
             </Form>
